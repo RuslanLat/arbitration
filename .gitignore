@@ -1,0 +1,8 @@
+.ipynb_checkpoints/
+/venv/*
+/pgdata/*
+/data/*
+/backend/app/mlmodel/*
+/mlmodel/*
+__pycache__/
+*.py[cod]
