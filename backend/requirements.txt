@@ -11,3 +11,5 @@ PyYAML==6.0.1
 SQLAlchemy==2.0.29
 torch==2.2.2
 transformers==4.39.3
+numpy==1.26.4
+tqdm==4.66.2
