@@ -1,4 +1,8 @@
+import json
 import os
+import pickle
+import pandas as pd
+import re
 from typing import List
 from aiohttp.web import HTTPConflict
 from aiohttp_apispec import (
@@ -9,7 +13,7 @@ from aiohttp_apispec import (
 )
 from aiohttp.web_response import Response
 from sqlalchemy import exc
-
+from pymystem3 import Mystem
 
 from app.web.app import View
 from app.web.utils import json_response
@@ -21,6 +25,34 @@ from app.docs.schemes import (
 from app.docs.models import DocsBase
 from app.docs.utils import GetTextContract
 
+with open('app/pkl_object/labels.json', 'r', encoding='utf8') as f:
+    kind_names = json.load(f)
+
+with open('app/pkl_object/vectorizer.pkl', 'rb') as f:
+    vectorizer = pickle.load(f)
+    
+with open('app/pkl_object/logit_grid_searcher.pkl', 'rb') as f:
+    logit_grid_searcher = pickle.load(f)
+
+MAX_WORD = 1000
+
+m = Mystem() 
+
+def ContractTransform(contract):
+
+    contract = contract.lower()
+    contract = re.sub('[^а-яА-ЯёЁ]', ' ', contract)
+    lemm_text_list = [i for i in m.lemmatize(contract) if len(i.strip()) > 2]
+    lemm_text_list = lemm_text_list[:MAX_WORD]
+    
+    return pd.Series(' '.join(lemm_text_list))
+
+def ModelPredictProba(contract, kind_names, vectorizer, logit_grid_searcher):
+    
+    X = vectorizer.transform(contract)
+    kind_name_pred = kind_names[str(logit_grid_searcher.predict(X)[0])]
+        
+    return kind_name_pred
 
 class DocsAddView(View):
     # @form_schema(DocsRequestSchema, put_into=None) # , locations=["files"]
@@ -54,8 +86,11 @@ class DocsAddView(View):
 
         content = GetTextContract("../storage/" + filename)
 
+        contract = ContractTransform(content)
+        kind_name_pred = ModelPredictProba(contract, kind_names, vectorizer, logit_grid_searcher)
+
         file = await self.store.files.create_doc(
-            filename=filename, content=content, label="order"
+            filename=filename, content=content, label=kind_name_pred
         )
 
         return json_response(data=DocsSchema().dump(file))
