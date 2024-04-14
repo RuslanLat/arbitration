@@ -19,7 +19,12 @@ mlmodel:
         - `labels.json`
         - `Ru-bert-Pavlov-Gusev-fine-tuned.pt`
         - `train_nn.py`
+        - `sample.csv`
+        - `inference_bert.ipynb`
+        - `bert_finetune.ipynb`
 
+2. Получение предсказаний обученной модели ноутбук `inference_bert.ipynb`
+3. Дообучение модел ноутбук `bert_finetune.ipynb`
 
 ### Запуск сервиса
 
