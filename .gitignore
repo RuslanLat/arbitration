@@ -3,6 +3,7 @@
 /pgdata/*
 /data/*
 /backend/app/mlmodel/*
-/mlmodel/*
+*.pt
+*.pth
 __pycache__/
 *.py[cod]
