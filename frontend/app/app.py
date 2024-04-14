@@ -14,7 +14,7 @@ st.set_page_config(
     layout="wide",
 )
 
-with open("css/AG_GRID_LOCALE_RU.txt", "r") as f:
+with open("app/css/AG_GRID_LOCALE_RU.txt", "r") as f:
     AG_CRID_LOCALE_RU = json.load(f)
 
 
@@ -33,7 +33,7 @@ def plot_change_table(df, key):
     gd.configure_pagination(
         enabled=True, paginationAutoPageSize=False, paginationPageSize=5
     )
-    gd.configure_grid_options(stopEditingWhenCellsLoseFocus=True, rowHeight=400)  # , rowHeight=80
+    gd.configure_grid_options(stopEditingWhenCellsLoseFocus=True, rowHeight=600)  # , rowHeight=80
     gd.configure_grid_options(localeText=AG_CRID_LOCALE_RU)
     gd.configure_default_column(editable=True, groupable=True, wrapText = True)
     gd.configure_selection(selection_mode="multiple", use_checkbox=True)
@@ -115,7 +115,7 @@ if selected == "Классификатор":
             help="укажите путь к файлу или перетащите его в онко загрузки",
         )
         if uploaded_file:
-            url = "http://api:8080/docs.add"
+            url = "http://localhost:8080/docs.add"
             payload = {"filename": uploaded_file.name}
             response = requests.post(
                 url, data=payload, files={"uploaded_file": uploaded_file.getvalue()}
@@ -123,23 +123,31 @@ if selected == "Классификатор":
             contract_name = uploaded_file.name
             st.success("Файл успешно загружен", icon="✅")
             data = response.json()["data"]
-            st.components.v1.html(
-                data["content"], width=None, height=300, scrolling=True
-            )
-
-            st.success("Вид документа успешно определён", icon="✅")
-
-            st.write(
-                f"""**Результаты:**
-                
-            📌 Наименование файла: {contract_name}
+            try:
+                content = data["content"]
             
-    ✔️ Предсказанный вид договора:  {data["label"]}
 
-                """
-            )
+                st.components.v1.html(
+                    content, width=None, height=300, scrolling=True
+                )
+
+                st.success("Вид документа успешно определён", icon="✅")
+
+                st.write(
+                    f"""**Результаты:**
+                    
+                📌 Наименование файла: {contract_name}
+                
+        ✔️ Предсказанный вид договора:  {data["label"]}
+
+                    """
+                )
+            except:
+                st.error("Такой документ уже есть в базе данных", icon="❌")
         else:
             st.error("Вы ничего не вабрали", icon="❌")
+            
+
 
 
 if selected == "Архив":
@@ -152,13 +160,21 @@ if selected == "Архив":
 
 """
     )
-    url = "http://api:8080/docs.list"
+    url = "http://localhost:8080/docs.list"
 
     response = requests.get(url)
 
-    df = pd.DataFrame(response.json()["data"]["files"])
+    files = response.json()["data"]["files"]
 
-    aggrid_files = plot_change_table(df, key="abc")
+    if len(files) == 0:
+
+        st.error("В базе данных пока нет ни каких документов", icon="❌")
+
+    else:
+
+        df = pd.DataFrame(files)
+
+        aggrid_files = plot_change_table(df, key="abc")
 
 
 st.markdown(

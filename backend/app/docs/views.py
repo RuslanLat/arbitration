@@ -1,6 +1,4 @@
-import json
 import os
-import yaml
 from typing import List
 from aiohttp.web import HTTPConflict
 from aiohttp_apispec import (
@@ -22,23 +20,6 @@ from app.docs.schemes import (
 )
 from app.docs.models import DocsBase
 from app.docs.utils import GetTextContract
-from app.mlmodel.bert_inference import run_inference
-from app.mlmodel.bert_model import BertForSequenceClassification
-
-
-with open("app/mlmodel/config.yml", "r") as yamlfile:
-    cfg = yaml.safe_load(yamlfile)
-
-with open("app/mlmodel/labels.json", "r", encoding="utf8") as f:
-    labels = json.load(f)
-
-
-model = BertForSequenceClassification(
-    pretrained_model_name="DeepPavlov/rubert-base-cased",
-    num_labels=cfg["model"]["num_classes"],
-    dropout=cfg["model"]["dropout"],
-    inference=True,
-)
 
 
 class DocsAddView(View):
@@ -73,17 +54,8 @@ class DocsAddView(View):
 
         content = GetTextContract("../storage/" + filename)
 
-        (
-            most_confident_label,
-            most_confident_labels,
-            getting_confidences_args,
-            probabilities,
-        ) = run_inference(content, "cpu", model)
-
-        label = labels[str(most_confident_label)]
-
         file = await self.store.files.create_doc(
-            filename=filename, content=content, label=label
+            filename=filename, content=content, label="label"
         )
 
         return json_response(data=DocsSchema().dump(file))
