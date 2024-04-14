@@ -55,7 +55,7 @@ class DocsAddView(View):
         content = GetTextContract("../storage/" + filename)
 
         file = await self.store.files.create_doc(
-            filename=filename, content=content, label="label"
+            filename=filename, content=content, label="order"
         )
 
         return json_response(data=DocsSchema().dump(file))
