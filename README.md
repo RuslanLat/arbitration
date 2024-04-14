@@ -23,8 +23,10 @@ mlmodel:
         - `inference_bert.ipynb`
         - `bert_finetune.ipynb`
 
-2. Получение предсказаний обученной модели ноутбук `inference_bert.ipynb`
-3. Дообучение модел ноутбук `bert_finetune.ipynb`
+2. Дообучение модел ноутбук `bert_finetune.ipynb`
+3. Получение предсказаний обученной модели ноутбук `inference_bert.ipynb`
+
+***Примечание:***  порядок закуска описан в ноутбуках
 
 ### Запуск сервиса
 
